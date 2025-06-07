@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="pl">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#667eea" />
+    <meta
+      name="description"
+      content="Redis Chat Application - Demonstracja wykorzystania Redis w aplikacji czatu z Express.js i React"
+    />
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <title>Redis Chat App - Demo Application</title>
+    
+    <style>
+      /* Reset and base styles */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      
+      body {
+        font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+      }
+      
+      #root {
+        min-height: 100vh;
+      }
+      
+      /* Loading spinner */
+      .loading-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        color: white;
+      }
+      
+      .spinner {
+        width: 50px;
+        height: 50px;
+        border: 4px solid rgba(255, 255, 255, 0.3);
+        border-top: 4px solid white;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-bottom: 20px;
+      }
+      
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      
+      /* Error boundary styles */
+      .error-boundary {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        padding: 20px;
+        color: white;
+        text-align: center;
+      }
+      
+      .error-boundary h1 {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+      }
+      
+      .error-boundary p {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        margin-bottom: 2rem;
+        max-width: 600px;
+        line-height: 1.6;
+      }
+      
+      .error-boundary button {
+        background: rgba(255, 255, 255, 0.2);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        color: white;
+        padding: 12px 24px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+      }
+      
+      .error-boundary button:hover {
+        background: rgba(255, 255, 255, 0.3);
+        border-color: rgba(255, 255, 255, 0.5);
+        transform: translateY(-2px);
+      }
+      
+      /* Custom scrollbar */
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      
+      ::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.1);
+      }
+      
+      ::-webkit-scrollbar-thumb {
+        background: rgba(102, 126, 234, 0.5);
+        border-radius: 4px;
+      }
+      
+      ::-webkit-scrollbar-thumb:hover {
+        background: rgba(102, 126, 234, 0.7);
+      }
+    </style>
+  </head>
+  <body>
+    <noscript>
+      <div class="error-boundary">
+        <h1>🚫 JavaScript Required</h1>
+        <p>Ta aplikacja wymaga włączonego JavaScript aby działać poprawnie.</p>
+        <p>Proszę włączyć JavaScript w przeglądarce i odświeżyć stronę.</p>
+      </div>
+    </noscript>
+    
+    <div id="root">
+      <div class="loading-container">
+        <div class="spinner"></div>
+        <h2>Ładowanie Redis Chat App...</h2>
+        <p>Przygotowujemy demo Redis operations</p>
+      </div>
+    </div>
+    
+    <script>
+      // Remove loading screen when React loads
+      window.addEventListener('DOMContentLoaded', () => {
+        setTimeout(() => {
+          const loading = document.querySelector('.loading-container');
+          if (loading && window.React) {
+            loading.style.display = 'none';
+          }
+        }, 2000);
+      });
+      
+      // Global error handler
+      window.addEventListener('error', (event) => {
+        console.error('Global error:', event.error);
+      });
+      
+      window.addEventListener('unhandledrejection', (event) => {
+        console.error('Unhandled promise rejection:', event.reason);
+      });
+    </script>
+  </body>
+</html>
