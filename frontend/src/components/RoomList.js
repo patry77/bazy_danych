@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import { fetchLeaderboard } from '../services/socketService';
 
 const RoomListContainer = styled.div`
   max-width: 800px;
@@ -135,8 +136,27 @@ const RoomList = ({ user, onJoinRoom }) => {
   const [newRoomName, setNewRoomName] = useState('');
   const [creating, setCreating] = useState(false);
 
+  // Leaderboard state
+  const [leaderboard, setLeaderboard] = useState([]);
+
   useEffect(() => {
     fetchRooms();
+    // Set up interval to auto-refresh room list every 5 seconds
+    const interval = setInterval(fetchRooms, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    // Fetch leaderboard on mount and every 10s
+    const getLeaderboard = async () => {
+      try {
+        const data = await fetchLeaderboard(10);
+        setLeaderboard(data);
+      } catch {}
+    };
+    getLeaderboard();
+    const interval = setInterval(getLeaderboard, 10000);
+    return () => clearInterval(interval);
   }, []);
 
   const fetchRooms = async () => {
@@ -147,7 +167,6 @@ const RoomList = ({ user, onJoinRoom }) => {
       // Fallback with default rooms if API fails
       setRooms([
         { id: 'general', name: 'General', userCount: 0, messageCount: 0 },
-        { id: 'tech', name: 'Technology', userCount: 0, messageCount: 0 },
         { id: 'random', name: 'Random', userCount: 0, messageCount: 0 }
       ]);
       toast.error('Failed to load rooms from server, using defaults');
@@ -158,39 +177,30 @@ const RoomList = ({ user, onJoinRoom }) => {
 
   const handleCreateRoom = async (e) => {
     e.preventDefault();
-    
     if (!newRoomName.trim()) {
       toast.error('Please enter a room name');
       return;
     }
-    
     setCreating(true);
-    
     try {
       const roomId = newRoomName.toLowerCase().replace(/[^a-z0-9]/g, '_');
-      
-      const newRoom = {
-        id: roomId,
+      // Send correct payload to backend
+      const newRoomPayload = {
+        roomId,
         name: newRoomName.trim(),
-        userCount: 0,
-        messageCount: 0,
         createdBy: user.id
       };
-      
-      // Try to create via API, fallback to local
       try {
-        const response = await axios.post('/api/chat/rooms', newRoom);
-        setRooms(prev => [...prev, response.data.data]);
+        const response = await axios.post('/api/chat/rooms', newRoomPayload);
+        await fetchRooms();
       } catch (apiError) {
         // Fallback - add locally
-        setRooms(prev => [...prev, newRoom]);
+        setRooms(prev => [...prev, { id: roomId, name: newRoomName.trim(), userCount: 0, messageCount: 0, createdBy: user.id }]);
       }
-      
       setNewRoomName('');
-      toast.success('Room created successfully!');
-      
+      toast.success('Stworzono pokój: ' + newRoomName.trim());
     } catch (error) {
-      toast.error('Failed to create room');
+      toast.error('Nie udało się stworzyć pokoju. Spróbuj ponownie.');
     } finally {
       setCreating(false);
     }
@@ -198,29 +208,41 @@ const RoomList = ({ user, onJoinRoom }) => {
 
   const handleJoinRoom = (room) => {
     onJoinRoom(room);
-    toast.success(`Joining ${room.name}...`);
+    toast.success(`Dołączam do ${room.name}...`);
   };
 
   if (loading) {
     return (
       <RoomListContainer>
-        <RoomListTitle>Loading rooms...</RoomListTitle>
+        <RoomListTitle>Ładuje pokoje</RoomListTitle>
       </RoomListContainer>
     );
   }
 
   return (
     <RoomListContainer>
-      <RoomListTitle>🏠 Choose a Room</RoomListTitle>
+      <RoomListTitle>Wybierz pokój</RoomListTitle>
       
+      {/* Leaderboard display */}
+      <div style={{background:'#fff',borderRadius:10,padding:20,marginBottom:30,boxShadow:'0 2px 8px rgba(0,0,0,0.08)'}}>
+        <h2 style={{color:'#667eea',marginBottom:10,fontSize:'1.3rem'}}>🏆 Ranking aktywności</h2>
+        <ol style={{margin:0,paddingLeft:20}}>
+          {leaderboard.map((entry,i) => (
+            <li key={entry.userId} style={{marginBottom:4}}>
+              <span style={{fontWeight:600}}>{entry.username}</span> <span style={{color:'#888'}}>({entry.score})</span>
+            </li>
+          ))}
+        </ol>
+      </div>
+
       <CreateRoomCard>
-        <CreateRoomTitle>Create New Room</CreateRoomTitle>
+        <CreateRoomTitle>Stwórz nowy pokój</CreateRoomTitle>
         <CreateRoomForm onSubmit={handleCreateRoom}>
           <Input
             type="text"
             value={newRoomName}
             onChange={(e) => setNewRoomName(e.target.value)}
-            placeholder="Enter room name..."
+            placeholder="Nazwa pokoju..."
             maxLength={30}
             disabled={creating}
           />
@@ -235,17 +257,16 @@ const RoomList = ({ user, onJoinRoom }) => {
           <RoomCard key={room.id} onClick={() => handleJoinRoom(room)}>
             <RoomName>#{room.name}</RoomName>
             <RoomStats>
-              <span>👥 {room.userCount || 0} users</span>
+              {/* Usunięto licznik użytkowników */}
               <span>💬 {room.messageCount || 0} messages</span>
             </RoomStats>
             <RoomDescription>
-              {room.id === 'general' && 'The main room for general discussion'}
-              {room.id === 'tech' && 'Technology and programming discussions'}
-              {room.id === 'random' && 'Random topics and casual chat'}
-              {!['general', 'tech', 'random'].includes(room.id) && 'Custom chat room'}
+              {room.id === 'general' && 'xx'}
+              {room.id === 'random' && 'xx'}
+              {!['general', 'random'].includes(room.id) && 'xx'}
             </RoomDescription>
             <JoinButton>
-              Join Room
+              Dołącz
             </JoinButton>
           </RoomCard>
         ))}
@@ -253,8 +274,7 @@ const RoomList = ({ user, onJoinRoom }) => {
       
       {rooms.length === 0 && (
         <div style={{ textAlign: 'center', color: 'white', marginTop: '40px' }}>
-          <h3>No rooms available</h3>
-          <p>Create the first room to get started!</p>
+          <h3>Brak pokojów</h3>
         </div>
       )}
     </RoomListContainer>

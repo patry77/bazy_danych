@@ -191,25 +191,54 @@ class RedisService {
     }
   }
 
-  // ======= SORTED SET OPERATIONS =======
-  
-  // Dodaj do sorted set
+  // ======= SORTED SET (LEADERBOARD) =======
+  // Dodaj/aktualizuj wynik użytkownika
   async addToSortedSet(key, score, value) {
     try {
-      return await redisClient.zAdd(key, { score, value });
+      // Jeśli score to '+1' lub '+N', użyj ZINCRBY
+      if (typeof score === 'string' && score.startsWith('+')) {
+        const increment = Number(score);
+        if (isNaN(increment)) throw new Error('Invalid increment value for sorted set');
+        return await redisClient.zIncrBy(key, increment, value);
+      } else {
+        // score musi być liczbą
+        return await redisClient.zAdd(key, [{ score: Number(score), value }]);
+      }
     } catch (error) {
       console.error('Error adding to sorted set:', error);
       return null;
     }
   }
 
-  // Pobierz z sorted set (z wynikami)
+  // Pobierz ranking z wynikami
   async getSortedSetWithScores(key, start = 0, end = -1) {
     try {
-      return await redisClient.zRangeWithScores(key, start, end);
+      // Zwraca [{ value, score }]
+      return await redisClient.zRangeWithScores(key, start, end, { REV: true });
     } catch (error) {
       console.error('Error getting sorted set:', error);
       return [];
+    }
+  }
+
+  // Pobierz pozycję użytkownika
+  async getUserRank(key, value) {
+    try {
+      // ZREVRANK - pozycja od najwyższego wyniku
+      return await redisClient.zRevRank(key, value);
+    } catch (error) {
+      console.error('Error getting user rank:', error);
+      return null;
+    }
+  }
+
+  // Usuń użytkownika z rankingu
+  async removeFromSortedSet(key, value) {
+    try {
+      return await redisClient.zRem(key, value);
+    } catch (error) {
+      console.error('Error removing from sorted set:', error);
+      return null;
     }
   }
 

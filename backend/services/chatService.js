@@ -102,6 +102,8 @@ class ChatService {
       
       // Invalidate cache dla tego pokoju
       await cacheService.invalidate(`cache:room:${roomId}:*`);
+      // DODAJ: Invalidate cache info dla wszystkich pokoi (RoomList)
+      await cacheService.invalidate('cache:room:*:info');
       
       return messageObj;
     } catch (error) {
@@ -135,22 +137,23 @@ class ChatService {
   async createRoom(roomId, name, createdBy) {
     try {
       const roomKey = `chat:room:${roomId}`;
-      
+      const cacheKey = `cache:room:${roomId}:info`;
       const roomData = {
         id: roomId,
         name: name,
         createdBy: createdBy,
         createdAt: Date.now(),
-        messageCount: 0,
-        userCount: 0
+        messageCount: 0
+        // userCount: 0 // USUNIĘTO zliczanie użytkowników
       };
-      
       // Zapisz metadane pokoju (Hash)
       await redisService.setHashObject(roomKey, roomData);
-      
       // Dodaj do listy wszystkich pokoi (Set)
-      await redisService.addToSet('chat:rooms:all', roomId);
-      
+      const addResult = await redisService.addToSet('chat:rooms:all', roomId);
+      console.log(`[createRoom] Added roomId '${roomId}' to chat:rooms:all, result:`, addResult);
+      // Stwórz cache:room info od razu po utworzeniu pokoju
+      await cacheService.set(cacheKey, roomData, this.CACHE_TTL);
+      console.log(`[createRoom] Room created:`, roomData);
       return roomData;
     } catch (error) {
       console.error('Error creating room:', error);
@@ -172,15 +175,10 @@ class ChatService {
           const roomData = await redisService.getHash(roomKey);
           if (!roomData.id) return null;
           
-          // Pobierz aktualną liczbę użytkowników
-          const users = await redisService.getSet(roomUsersKey);
-          roomData.userCount = users.length;
-          roomData.users = users;
-          
           // Pobierz liczbę wiadomości
           const messages = await redisService.getList(messagesKey);
           roomData.messageCount = messages.length;
-          
+
           return roomData;
         },
         this.CACHE_TTL
@@ -189,6 +187,11 @@ class ChatService {
       console.error('Error getting room info:', error);
       return null;
     }
+  }
+
+  async getAllRoomIds() {
+    // Pobierz wszystkie roomId z Redis Set
+    return await redisService.getSet('chat:rooms:all');
   }
 
   // ======= STATISTICS =======
@@ -235,7 +238,7 @@ class ChatService {
       await redisService.addToSet(onlineUsersKey, userId);
       
       // Ustaw timestamp ostatniej aktywności
-      await redisService.setString(`${userKey}:last_seen`, Date.now(), 3600);
+      await redisService.setString(`${userKey}:last_seen`, Date.now().toString(), 3600);
       
       return true;
     } catch (error) {
@@ -354,27 +357,59 @@ class ChatService {
     return true;
   }
 
-  // SORTED SET CRUD (Leaderboard)
-  async updateUserScore(userId, score) {
+  // ======= LEADERBOARD (SORTED SET) =======
+  // Dodaj lub zaktualizuj wynik użytkownika
+  async updateUserScore(userId, score, username = null) {
     const key = 'chat:leaderboard';
-    return await redisService.addToSortedSet(key, score, userId);
+    // Pobierz username jeśli nie podano
+    let uname = username;
+    if (!uname) {
+      // Spróbuj pobrać z profilu
+      const profile = await this.getUserProfile(userId);
+      uname = profile && profile.username ? profile.username : userId;
+    }
+    const member = `${userId}:${uname}`;
+    return await redisService.addToSortedSet(key, score, member);
   }
-  
+
+  // Pobierz ranking użytkowników
   async getLeaderboard(limit = 10) {
     const key = 'chat:leaderboard';
-    return await redisService.getSortedSetWithScores(key, 0, limit - 1);
+    // Zwraca tablicę [{ userId, username, score }]
+    const raw = await redisService.getSortedSetWithScores(key, 0, limit - 1);
+    return raw.map(entry => {
+      const [userId, ...usernameParts] = entry.value.split(":");
+      return {
+        userId,
+        username: usernameParts.join(":"),
+        score: entry.score
+      };
+    });
   }
-  
-  async getUserRank(userId) {
-    // W Redis CLI: ZRANK key member
-    console.log(`Getting rank for user ${userId}`);
-    return 1; // Symulacja
+
+  // Pobierz miejsce użytkownika w rankingu
+  async getUserRank(userId, username = null) {
+    const key = 'chat:leaderboard';
+    // Musimy znaleźć pełny member string
+    let uname = username;
+    if (!uname) {
+      const profile = await this.getUserProfile(userId);
+      uname = profile && profile.username ? profile.username : userId;
+    }
+    const member = `${userId}:${uname}`;
+    return await redisService.getUserRank(key, member);
   }
-  
-  async removeFromLeaderboard(userId) {
-    // W Redis CLI: ZREM key member
-    console.log(`Removing ${userId} from leaderboard`);
-    return true;
+
+  // Usuń użytkownika z rankingu
+  async removeFromLeaderboard(userId, username = null) {
+    const key = 'chat:leaderboard';
+    let uname = username;
+    if (!uname) {
+      const profile = await this.getUserProfile(userId);
+      uname = profile && profile.username ? profile.username : userId;
+    }
+    const member = `${userId}:${uname}`;
+    return await redisService.removeFromSortedSet(key, member);
   }
 
   // ======= ADVANCED REDIS OPERATIONS =======

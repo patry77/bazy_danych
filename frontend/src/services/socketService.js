@@ -1,5 +1,6 @@
 import { io } from 'socket.io-client';
 import toast from 'react-hot-toast';
+import axios from 'axios';
 
 let socket = null;
 
@@ -62,12 +63,10 @@ export const disconnectSocket = () => {
 
 export const getSocket = () => socket;
 
-// Check if socket is connected
 export const isConnected = () => {
   return socket && socket.connected;
 };
 
-// Chat event handlers
 export const joinRoom = (roomData) => {
   if (socket && socket.connected) {
     socket.emit('join-room', roomData);
@@ -327,6 +326,21 @@ export const joinRoomWithRetry = async (roomData) => {
   });
 };
 
+// ======= LEADERBOARD =======
+export const fetchLeaderboard = async (limit = 10) => {
+  const response = await axios.get('/api/chat/leaderboard?limit=' + limit);
+  return response.data.data;
+};
+
+export const updateUserScore = async (userId, score, username) => {
+  // Jeśli score to '+1', wyślij specjalny request inkrementujący na backend
+  if (score === '+1') {
+    await axios.post('/api/chat/leaderboard', { userId, score: '+1', username });
+  } else {
+    await axios.post('/api/chat/leaderboard', { userId, score, username });
+  }
+};
+
 // Export connection state
 export const getConnectionState = () => {
   if (!socket) {
@@ -363,7 +377,7 @@ export const getSocketInfo = () => {
   };
 };
 
-// Default export for convenience
+
 export default {
   connectSocket,
   disconnectSocket,
@@ -385,5 +399,7 @@ export default {
   getConnectionState,
   getSocketInfo,
   sendMessageWithRetry,
-  joinRoomWithRetry
+  joinRoomWithRetry,
+  fetchLeaderboard,
+  updateUserScore
 };

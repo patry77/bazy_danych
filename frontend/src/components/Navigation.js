@@ -134,12 +134,6 @@ const Navigation = ({ user, onLogout, currentRoom, onLeaveRoom }) => {
           {currentRoom ? 'Chat' : 'Rooms'}
         </NavLink>
         <NavLink 
-          to="/demo" 
-          className={location.pathname === '/demo' ? 'active' : ''}
-        >
-          Demo
-        </NavLink>
-        <NavLink 
           to="/redis" 
           className={location.pathname === '/redis' ? 'active' : ''}
         >
@@ -160,11 +154,11 @@ const Navigation = ({ user, onLogout, currentRoom, onLeaveRoom }) => {
         <UserName>{user.username}</UserName>
         {currentRoom && (
           <Button onClick={onLeaveRoom}>
-            Leave
+            Opuść pokój
           </Button>
         )}
         <Button variant="danger" onClick={onLogout}>
-          Logout
+          Wyloguj
         </Button>
       </UserInfo>
     </NavContainer>

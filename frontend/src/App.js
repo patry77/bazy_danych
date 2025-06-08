@@ -11,6 +11,7 @@ import RedisDemo from './components/RedisDemo';
 import CacheDemo from './components/CacheDemo';
 import Navigation from './components/Navigation';
 
+
 // Services
 import { connectSocket, disconnectSocket } from './services/socketService';
 
@@ -146,10 +147,7 @@ function App() {
                 />
               )
             } />
-            
-            <Route path="/demo" element={
-              user ? <WelcomeDemo /> : <Navigate to="/" />
-            } />
+          
             
             <Route path="/redis" element={
               user ? <RedisDemo /> : <Navigate to="/" />
@@ -176,64 +174,5 @@ function App() {
   );
 }
 
-// Welcome/Demo component
-const WelcomeDemo = () => {
-  return (
-    <WelcomeContainer>
-      <Title>Redis Chat App</Title>
-      <Subtitle>Demonstracja wykorzystania Redis w aplikacji czatu</Subtitle>
-      
-      <FeatureGrid>
-        <FeatureCard>
-          <FeatureTitle>🔑 Redis Fundamentals</FeatureTitle>
-          <FeatureDescription>
-            Poznaj typy danych Redis: STRING, HASH, LIST, SET, SORTED SET. 
-            Zrozum klucze, TTL i dobre praktyki nazewnictwa.
-          </FeatureDescription>
-        </FeatureCard>
-        
-        <FeatureCard>
-          <FeatureTitle>💬 Real-time Chat</FeatureTitle>
-          <FeatureDescription>
-            Czat wykorzystujący Redis do przechowywania wiadomości (LIST), 
-            użytkowników online (SET) i metadanych pokoi (HASH).
-          </FeatureDescription>
-        </FeatureCard>
-        
-        <FeatureCard>
-          <FeatureTitle>⚡ Cache Strategies</FeatureTitle>
-          <FeatureDescription>
-            Implementacja strategii cachowania: Cache-Aside, Read-Through, 
-            Write-Through, Write-Around, Write-Back.
-          </FeatureDescription>
-        </FeatureCard>
-        
-        <FeatureCard>
-          <FeatureTitle>🏆 LRU & LFU</FeatureTitle>
-          <FeatureDescription>
-            Demonstracja algorytmów wypierania: Least Recently Used (LRU) 
-            i Least Frequently Used (LFU).
-          </FeatureDescription>
-        </FeatureCard>
-        
-        <FeatureCard>
-          <FeatureTitle>🔄 CRUD Operations</FeatureTitle>
-          <FeatureDescription>
-            Pełne operacje CRUD dla każdego typu danych Redis 
-            z przykładami komend CLI.
-          </FeatureDescription>
-        </FeatureCard>
-        
-        <FeatureCard>
-          <FeatureTitle>🛡️ Data Persistence</FeatureTitle>
-          <FeatureDescription>
-            Porównanie Redis vs MongoDB, strategie persystencji 
-            (RDB, AOF, Hybrid) i przypadki użycia.
-          </FeatureDescription>
-        </FeatureCard>
-      </FeatureGrid>
-    </WelcomeContainer>
-  );
-};
 
 export default App;

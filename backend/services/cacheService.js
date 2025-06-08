@@ -289,6 +289,17 @@ class CacheService {
       return {};
     }
   }
+
+  // ======= SIMPLE SETTER FOR CACHE =======
+  async set(key, value, ttl = this.defaultTTL) {
+    try {
+      await cacheClient.setEx(key, ttl, JSON.stringify(value));
+      return true;
+    } catch (error) {
+      console.error('Cache set error:', error);
+      return false;
+    }
+  }
 }
 
 module.exports = new CacheService();

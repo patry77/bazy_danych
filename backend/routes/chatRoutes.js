@@ -7,8 +7,8 @@ const chatService = require('../services/chatService');
 // Get all rooms
 router.get('/rooms', async (req, res) => {
   try {
-    // Demo: get rooms from Redis Set
-    const roomIds = ['general', 'tech', 'random']; // W prawdziwej aplikacji z Redis
+    // Pobierz wszystkie roomId z Redis Set
+    const roomIds = await chatService.getAllRoomIds();
     const rooms = [];
     
     for (const roomId of roomIds) {
@@ -428,6 +428,81 @@ router.get('/demo/persistence', async (req, res) => {
         }
       }
     });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// DEBUG: Get raw room IDs from Redis
+router.get('/debug/rooms/raw', async (req, res) => {
+  try {
+    const roomIds = await chatService.getAllRoomIds();
+    res.json({
+      success: true,
+      roomIds
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// ======= LEADERBOARD ENDPOINTS =======
+// Dodaj/aktualizuj wynik użytkownika
+router.post('/leaderboard', async (req, res) => {
+  try {
+    const { userId, score, username } = req.body;
+    if (!userId || typeof score === 'undefined') {
+      return res.status(400).json({ success: false, error: 'userId and score required' });
+    }
+    // Jeśli score === '+1', inkrementuj wynik w Redis
+    if (score === '+1') {
+      // Pobierz aktualny username
+      let uname = username;
+      if (!uname) {
+        const profile = await chatService.getUserProfile(userId);
+        uname = profile && profile.username ? profile.username : userId;
+      }
+      await chatService.updateUserScore(userId, '+1', uname);
+    } else {
+      await chatService.updateUserScore(userId, score, username);
+    }
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Pobierz top N użytkowników
+router.get('/leaderboard', async (req, res) => {
+  try {
+    const { limit = 10 } = req.query;
+    const leaderboard = await chatService.getLeaderboard(Number(limit));
+    res.json({ success: true, data: leaderboard });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Pobierz pozycję użytkownika
+router.get('/leaderboard/:userId/rank', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const rank = await chatService.getUserRank(userId);
+    res.json({ success: true, rank });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Usuń użytkownika z rankingu
+router.delete('/leaderboard/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    await chatService.removeFromLeaderboard(userId);
+    res.json({ success: true });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }

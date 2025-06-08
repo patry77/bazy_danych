@@ -14,7 +14,8 @@ import {
   onMessagesHistory,
   onUserTyping,
   onUserStoppedTyping,
-  removeAllListeners
+  removeAllListeners,
+  updateUserScore
 } from '../services/socketService';
 
 const ChatContainer = styled.div`
@@ -302,7 +303,7 @@ const ChatRoom = ({ user, room, onLeaveRoom }) => {
 
       onUserLeft((data) => {
         if (data && data.username) {
-          toast.info(`${data.username} opuścił pokój`);
+          toast(`${data.username} opuścił pokój`);
           setMessages(prev => [...prev, {
             id: `system_${Date.now()}`,
             type: 'system',
@@ -388,21 +389,7 @@ const ChatRoom = ({ user, room, onLeaveRoom }) => {
   // Helper functions
   const handleSendMessage = (e) => {
     e.preventDefault();
-    
     if (newMessage.trim() && roomInfo && user) {
-      // const messageObj = {
-      //   id: `msg_${Date.now()}_${user.id}`,
-      //   userId: user.id,
-      //   username: user.username,
-      //   message: newMessage.trim(),
-      //   timestamp: Date.now(),
-      //   roomId: roomInfo.id
-      // };
-
-      // // Add message immediately for better UX
-      // setMessages(prev => [...prev, messageObj]);
-      
-      // Send via socket
       try {
         sendMessage({
           roomId: roomInfo.id,
@@ -410,11 +397,12 @@ const ChatRoom = ({ user, room, onLeaveRoom }) => {
           username: user.username,
           message: newMessage.trim()
         });
+        // Automatycznie zwiększ wynik w leaderboardzie (inkrementacja, nie nadpisanie)
+        updateUserScore(user.id, '+1', user.username);
       } catch (err) {
         console.error('Error sending message:', err);
         toast.error('Błąd wysyłania wiadomości');
       }
-      
       setNewMessage('');
       handleStopTyping();
     }

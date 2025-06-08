@@ -247,12 +247,9 @@ async function initializeDemoData() {
     
     // Create demo rooms
     await chatService.createRoom('general', 'Pokój Główny', 'system');
-    await chatService.createRoom('tech', 'Technologie', 'system');
     await chatService.createRoom('random', 'Losowe', 'system');
     
     // Add some demo messages
-    await chatService.sendMessage('general', 'system', 'System', 'Witaj w aplikacji czatu! 🎉');
-    await chatService.sendMessage('tech', 'system', 'System', 'Pokój do dyskusji o technologiach');
     
     // Demonstrate different Redis data types
     await redisService.setString('chat:stats:total_users', '0');
