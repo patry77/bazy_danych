@@ -1,4 +1,3 @@
-// ===== frontend/src/components/Navigation.js =====
 import React from 'react';
 import styled from 'styled-components';
 import { Link, useLocation } from 'react-router-dom';
@@ -129,15 +128,8 @@ const Navigation = ({ user, onLogout, currentRoom, onLeaveRoom }) => {
       <NavLinks>
         <NavLink 
           to="/" 
-          className={location.pathname === '/' ? 'active' : ''}
-        >
-          {currentRoom ? 'Chat' : 'Rooms'}
-        </NavLink>
-        <NavLink 
-          to="/redis" 
-          className={location.pathname === '/redis' ? 'active' : ''}
-        >
-          Redis
+          className={location.pathname === '/' ? 'active' : ''}        >
+          {currentRoom ? 'Czat' : 'Pokoje'}
         </NavLink>
         <NavLink 
           to="/cache" 

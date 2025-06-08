@@ -4,7 +4,6 @@ import App from './App';
 import ErrorBoundary from './components/ErrorBoundary';
 import './index.css';
 
-// Remove loading screen
 const loadingElement = document.querySelector('.loading-container');
 if (loadingElement) {
   loadingElement.style.display = 'none';

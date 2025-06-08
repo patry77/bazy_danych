@@ -87,14 +87,13 @@ const UserAuth = ({ onLogin }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!username.trim()) {
-      toast.error('Please enter a username');
+      if (!username.trim()) {
+      toast.error('Proszę podać nazwę użytkownika');
       return;
     }
     
     if (username.length < 2) {
-      toast.error('Username must be at least 2 characters');
+      toast.error('Nazwa użytkownika musi mieć co najmniej 2 znaki');
       return;
     }
     
@@ -102,35 +101,38 @@ const UserAuth = ({ onLogin }) => {
     
     try {
       const userId = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      
       const userData = {
         id: userId,
-        username: username.trim(),
-        joinedAt: Date.now()
+        username: username.trim(),        joinedAt: Date.now()
       };
+
+      await fetch('/api/chat/demo/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, sessionData: userData })
+      });
       
       onLogin(userData);
-      toast.success(`Welcome, ${userData.username}!`);
+      toast.success(`Witaj, ${userData.username}!`);
       
     } catch (error) {
-      toast.error('Login failed. Please try again.');
+      toast.error('Logowanie nie powiodło się. Spróbuj ponownie.');
     } finally {
       setLoading(false);
     }
   };
 
-  return (
-    <AuthContainer>
+  return (    <AuthContainer>
       <AuthCard>
-        <AuthTitle>Join Redis Chat</AuthTitle>
+        <AuthTitle>Dołącz do Redis Chat</AuthTitle>
         <AuthForm onSubmit={handleSubmit}>
           <InputGroup>
-            <Label>Choose your username:</Label>
+            <Label>Wybierz swoją nazwę użytkownika:</Label>
             <Input
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="Enter username..."
+              placeholder="Podaj nazwę użytkownika..."
               maxLength={20}
               disabled={loading}
               autoFocus
@@ -138,7 +140,7 @@ const UserAuth = ({ onLogin }) => {
           </InputGroup>
           
           <AuthButton type="submit" disabled={loading || !username.trim()}>
-            {loading ? 'Joining...' : 'Join Chat'}
+            {loading ? 'Dołączanie...' : 'Dołącz do czatu'}
           </AuthButton>
         </AuthForm>
       </AuthCard>

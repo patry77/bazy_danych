@@ -105,10 +105,9 @@ export const stopTyping = (typingData) => {
   }
 };
 
-// Event listeners with proper cleanup
 export const onNewMessage = (callback) => {
   if (socket) {
-    socket.off('new-message'); // Remove existing listeners
+    socket.off('new-message');
     socket.on('new-message', callback);
   }
 };
@@ -198,14 +197,12 @@ export const offUserStoppedTyping = () => {
   }
 };
 
-// Cleanup function to remove all listeners
 export const removeAllListeners = () => {
   if (socket) {
     socket.removeAllListeners();
   }
 };
 
-// Utility functions
 export const emitCustomEvent = (eventName, data) => {
   if (socket && socket.connected) {
     socket.emit(eventName, data);
@@ -216,7 +213,7 @@ export const emitCustomEvent = (eventName, data) => {
 
 export const onCustomEvent = (eventName, callback) => {
   if (socket) {
-    socket.off(eventName); // Remove existing listener
+    socket.off(eventName);
     socket.on(eventName, callback);
   }
 };
@@ -227,7 +224,6 @@ export const offCustomEvent = (eventName) => {
   }
 };
 
-// Connection status utilities
 export const waitForConnection = (timeout = 5000) => {
   return new Promise((resolve, reject) => {
     if (socket && socket.connected) {
@@ -237,10 +233,8 @@ export const waitForConnection = (timeout = 5000) => {
 
     if (!socket) {
       connectSocket();
-    }
-
-    const timer = setTimeout(() => {
-      reject(new Error('Connection timeout'));
+    }    const timer = setTimeout(() => {
+      reject(new Error('Przekroczono czas połączenia'));
     }, timeout);
 
     socket.on('connect', () => {
@@ -255,64 +249,56 @@ export const waitForConnection = (timeout = 5000) => {
   });
 };
 
-// Retry mechanism for failed operations
 export const withRetry = async (operation, maxRetries = 3, delay = 1000) => {
   for (let i = 0; i < maxRetries; i++) {
     try {
       await waitForConnection();
       return await operation();
     } catch (error) {
-      console.warn(`Operation failed, attempt ${i + 1}/${maxRetries}:`, error);
+      console.warn(`Operacja nieudana, próba ${i + 1}/${maxRetries}:`, error);
       
       if (i === maxRetries - 1) {
         throw error;
       }
       
-      // Wait before retrying
       await new Promise(resolve => setTimeout(resolve, delay * (i + 1)));
     }
   }
 };
 
-// Enhanced message sending with retry
 export const sendMessageWithRetry = async (messageData) => {
   return withRetry(() => {
     return new Promise((resolve, reject) => {
       if (!socket || !socket.connected) {
-        reject(new Error('Socket not connected'));
+        reject(new Error('Socket nie jest połączony'));
         return;
       }
 
-      // Send message
       socket.emit('send-message', messageData);
       
-      // Wait for acknowledgment (if implemented on server)
       const timeout = setTimeout(() => {
-        reject(new Error('Message send timeout'));
+        reject(new Error('Przekroczono czas wysyłania wiadomości'));
       }, 5000);
 
-      // For now, just resolve immediately since we don't have ack
       clearTimeout(timeout);
       resolve();
     });
   });
 };
 
-// Room management with retry
 export const joinRoomWithRetry = async (roomData) => {
   return withRetry(() => {
     return new Promise((resolve, reject) => {
       if (!socket || !socket.connected) {
-        reject(new Error('Socket not connected'));
+        reject(new Error('Socket nie jest połączony'));
         return;
       }
 
       socket.emit('join-room', roomData);
       
-      // Listen for room-info to confirm join
       const timeout = setTimeout(() => {
         socket.off('room-info', onRoomInfo);
-        reject(new Error('Join room timeout'));
+        reject(new Error('Przekroczono czas dołączania do pokoju'));
       }, 10000);
 
       const onRoomInfo = (info) => {
@@ -326,14 +312,12 @@ export const joinRoomWithRetry = async (roomData) => {
   });
 };
 
-// ======= LEADERBOARD =======
 export const fetchLeaderboard = async (limit = 10) => {
   const response = await axios.get('/api/chat/leaderboard?limit=' + limit);
   return response.data.data;
 };
 
 export const updateUserScore = async (userId, score, username) => {
-  // Jeśli score to '+1', wyślij specjalny request inkrementujący na backend
   if (score === '+1') {
     await axios.post('/api/chat/leaderboard', { userId, score: '+1', username });
   } else {
@@ -341,7 +325,6 @@ export const updateUserScore = async (userId, score, username) => {
   }
 };
 
-// Export connection state
 export const getConnectionState = () => {
   if (!socket) {
     return 'disconnected';
@@ -358,10 +341,9 @@ export const getConnectionState = () => {
   return 'disconnected';
 };
 
-// Debug information
 export const getSocketInfo = () => {
   if (!socket) {
-    return { status: 'not_initialized' };
+    return { status: 'nie_zainicjalizowany' };
   }
 
   return {

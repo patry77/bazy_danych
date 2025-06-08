@@ -127,12 +127,9 @@ class ErrorBoundary extends React.Component {
   }
 
   static getDerivedStateFromError(error) {
-    // Update state so the next render will show the fallback UI
     return { hasError: true };
   }
-
   componentDidCatch(error, errorInfo) {
-    // Generate unique error ID for tracking
     const errorId = `ERR_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     
     this.setState({
@@ -141,7 +138,6 @@ class ErrorBoundary extends React.Component {
       errorId: errorId
     });
 
-    // Log error details
     console.group('🚨 Error Boundary Caught Error');
     console.error('Error ID:', errorId);
     console.error('Error:', error);
@@ -149,12 +145,9 @@ class ErrorBoundary extends React.Component {
     console.error('Component Stack:', errorInfo?.componentStack);
     console.groupEnd();
 
-    // Report to error tracking service (if available)
     this.reportError(error, errorInfo, errorId);
   }
-
   reportError = (error, errorInfo, errorId) => {
-    // Here you could send to error tracking service like Sentry
     const errorReport = {
       errorId,
       message: error.message,
@@ -165,11 +158,7 @@ class ErrorBoundary extends React.Component {
       url: window.location.href
     };
 
-    // For now, just log it
     console.log('Error Report:', errorReport);
-    
-    // In production, you might send this to your error tracking service:
-    // errorTrackingService.captureException(error, { extra: errorReport });
   };
 
   handleReload = () => {

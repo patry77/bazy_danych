@@ -230,7 +230,6 @@ const ErrorContainer = styled.div`
 `;
 
 const ChatRoom = ({ user, room, onLeaveRoom }) => {
-  // WSZYSTKIE HOOKI MUSZĄ BYĆ NA POCZĄTKU - PRZED JAKIMKOLWIEK RETURN!
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [roomInfo, setRoomInfo] = useState(room || null);
@@ -241,19 +240,14 @@ const ChatRoom = ({ user, room, onLeaveRoom }) => {
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
 
-  // Sprawdzenie czy dane są prawidłowe
   const hasValidData = user && room;
-
-  // useEffect dla scroll
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages]);
 
-  // Główny useEffect dla inicjalizacji pokoju
   useEffect(() => {
-    // Jeśli nie mamy prawidłowych danych, ustaw błąd i zakończ
     if (!hasValidData) {
       setError(!user ? 'Brak danych użytkownika' : 'Brak danych pokoju');
       setLoading(false);
@@ -261,10 +255,7 @@ const ChatRoom = ({ user, room, onLeaveRoom }) => {
     }
 
     setLoading(true);
-    setError(null);
-
-    try {
-      // Ustaw domyślne roomInfo jeśli room nie ma wszystkich pól
+    setError(null);    try {
       const defaultRoomInfo = {
         id: room.id || 'unknown',
         name: room.name || room.id || 'Unnamed Room',
@@ -275,7 +266,6 @@ const ChatRoom = ({ user, room, onLeaveRoom }) => {
 
       setRoomInfo(defaultRoomInfo);
 
-      // Join room when component mounts
       joinRoom({
         roomId: defaultRoomInfo.id,
         userId: user.id,
@@ -354,10 +344,8 @@ const ChatRoom = ({ user, room, onLeaveRoom }) => {
           message: `Witaj w pokoju ${defaultRoomInfo.name}! 🎉`,
           timestamp: Date.now() - 60000,
           roomId: defaultRoomInfo.id
-        }
-      ];
+        }      ];
       
-      // Set mock messages after a short delay
       setTimeout(() => {
         setMessages(prev => prev.length === 0 ? mockMessages : prev);
         setLoading(false);
@@ -369,7 +357,6 @@ const ChatRoom = ({ user, room, onLeaveRoom }) => {
       setLoading(false);
     }
 
-    // Cleanup function
     return () => {
       try {
         if (room && user) {
@@ -383,10 +370,8 @@ const ChatRoom = ({ user, room, onLeaveRoom }) => {
       } catch (err) {
         console.error('Error during cleanup:', err);
       }
-    };
-  }, [hasValidData, room, user]); // Dependencies
+    };  }, [hasValidData, room, user]);
 
-  // Helper functions
   const handleSendMessage = (e) => {
     e.preventDefault();
     if (newMessage.trim() && roomInfo && user) {
@@ -395,9 +380,7 @@ const ChatRoom = ({ user, room, onLeaveRoom }) => {
           roomId: roomInfo.id,
           userId: user.id,
           username: user.username,
-          message: newMessage.trim()
-        });
-        // Automatycznie zwiększ wynik w leaderboardzie (inkrementacja, nie nadpisanie)
+          message: newMessage.trim()        });
         updateUserScore(user.id, '+1', user.username);
       } catch (err) {
         console.error('Error sending message:', err);
@@ -420,16 +403,13 @@ const ChatRoom = ({ user, room, onLeaveRoom }) => {
           username: user.username
         });
       } catch (err) {
-        console.error('Error starting typing:', err);
-      }
+        console.error('Error starting typing:', err);      }
     }
     
-    // Clear existing timeout
     if (typingTimeoutRef.current) {
       clearTimeout(typingTimeoutRef.current);
     }
     
-    // Set new timeout
     typingTimeoutRef.current = setTimeout(() => {
       handleStopTyping();
     }, 1000);
@@ -458,10 +438,9 @@ const ChatRoom = ({ user, room, onLeaveRoom }) => {
     try {
       return new Date(timestamp).toLocaleTimeString('pl-PL', {
         hour: '2-digit',
-        minute: '2-digit'
-      });
+        minute: '2-digit'      });
     } catch (err) {
-      return 'Invalid time';
+      return 'Nieprawidłowy czas';
     }
   };
 
@@ -469,13 +448,10 @@ const ChatRoom = ({ user, room, onLeaveRoom }) => {
     try {
       return new Date(timestamp).toLocaleDateString('pl-PL');
     } catch (err) {
-      return 'Invalid date';
+      return 'Nieprawidłowa data';
     }
   };
 
-  // RENDER LOGIC - PO WSZYSTKICH HOOKACH
-  
-  // Error state for missing user
   if (!user) {
     return (
       <ErrorContainer>
@@ -487,8 +463,6 @@ const ChatRoom = ({ user, room, onLeaveRoom }) => {
       </ErrorContainer>
     );
   }
-
-  // Error state for missing room
   if (!room) {
     return (
       <ErrorContainer>
@@ -501,7 +475,6 @@ const ChatRoom = ({ user, room, onLeaveRoom }) => {
     );
   }
 
-  // Loading state
   if (loading) {
     return (
       <LoadingContainer>
@@ -511,8 +484,6 @@ const ChatRoom = ({ user, room, onLeaveRoom }) => {
       </LoadingContainer>
     );
   }
-
-  // Error state
   if (error) {
     return (
       <ErrorContainer>
@@ -525,7 +496,6 @@ const ChatRoom = ({ user, room, onLeaveRoom }) => {
     );
   }
 
-  // Sprawdź ponownie czy roomInfo jest prawidłowe
   const currentRoomInfo = roomInfo || {
     id: room?.id || 'unknown',
     name: room?.name || room?.id || 'Unknown Room',

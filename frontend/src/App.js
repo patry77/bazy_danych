@@ -3,16 +3,12 @@ import styled from 'styled-components';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 
-// Import components properly
 import ChatRoom from './components/ChatRoom';
 import RoomList from './components/RoomList';
 import UserAuth from './components/UserAuth';
-import RedisDemo from './components/RedisDemo';
 import CacheDemo from './components/CacheDemo';
 import Navigation from './components/Navigation';
 
-
-// Services
 import { connectSocket, disconnectSocket } from './services/socketService';
 
 const AppContainer = styled.div`
@@ -149,9 +145,7 @@ function App() {
             } />
           
             
-            <Route path="/redis" element={
-              user ? <RedisDemo /> : <Navigate to="/" />
-            } />
+
             
             <Route path="/cache" element={
               user ? <CacheDemo /> : <Navigate to="/" />

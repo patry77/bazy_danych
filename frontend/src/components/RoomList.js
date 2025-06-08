@@ -135,19 +135,13 @@ const RoomList = ({ user, onJoinRoom }) => {
   const [loading, setLoading] = useState(true);
   const [newRoomName, setNewRoomName] = useState('');
   const [creating, setCreating] = useState(false);
-
-  // Leaderboard state
   const [leaderboard, setLeaderboard] = useState([]);
 
-  useEffect(() => {
-    fetchRooms();
-    // Set up interval to auto-refresh room list every 5 seconds
+  useEffect(() => {    fetchRooms();
     const interval = setInterval(fetchRooms, 5000);
     return () => clearInterval(interval);
   }, []);
-
   useEffect(() => {
-    // Fetch leaderboard on mount and every 10s
     const getLeaderboard = async () => {
       try {
         const data = await fetchLeaderboard(10);
@@ -162,14 +156,11 @@ const RoomList = ({ user, onJoinRoom }) => {
   const fetchRooms = async () => {
     try {
       const response = await axios.get('/api/chat/rooms');
-      setRooms(response.data.data);
-    } catch (error) {
-      // Fallback with default rooms if API fails
+      setRooms(response.data.data);    } catch (error) {
       setRooms([
         { id: 'general', name: 'General', userCount: 0, messageCount: 0 },
         { id: 'random', name: 'Random', userCount: 0, messageCount: 0 }
-      ]);
-      toast.error('Failed to load rooms from server, using defaults');
+      ]);      toast.error('Nie udało się załadować pokoi z serwera, używam domyślnych');
     } finally {
       setLoading(false);
     }
@@ -178,7 +169,7 @@ const RoomList = ({ user, onJoinRoom }) => {
   const handleCreateRoom = async (e) => {
     e.preventDefault();
     if (!newRoomName.trim()) {
-      toast.error('Please enter a room name');
+      toast.error('Proszę podać nazwę pokoju');
       return;
     }
     setCreating(true);
@@ -197,8 +188,7 @@ const RoomList = ({ user, onJoinRoom }) => {
         // Fallback - add locally
         setRooms(prev => [...prev, { id: roomId, name: newRoomName.trim(), userCount: 0, messageCount: 0, createdBy: user.id }]);
       }
-      setNewRoomName('');
-      toast.success('Stworzono pokój: ' + newRoomName.trim());
+      setNewRoomName('');      toast.success('Stworzono pokój: ' + newRoomName.trim());
     } catch (error) {
       toast.error('Nie udało się stworzyć pokoju. Spróbuj ponownie.');
     } finally {
@@ -214,7 +204,7 @@ const RoomList = ({ user, onJoinRoom }) => {
   if (loading) {
     return (
       <RoomListContainer>
-        <RoomListTitle>Ładuje pokoje</RoomListTitle>
+        <RoomListTitle>Ładowanie pokoi</RoomListTitle>
       </RoomListContainer>
     );
   }
@@ -245,9 +235,8 @@ const RoomList = ({ user, onJoinRoom }) => {
             placeholder="Nazwa pokoju..."
             maxLength={30}
             disabled={creating}
-          />
-          <Button type="submit" disabled={creating || !newRoomName.trim()}>
-            {creating ? 'Creating...' : 'Create'}
+          />          <Button type="submit" disabled={creating || !newRoomName.trim()}>
+            {creating ? 'Tworzenie...' : 'Stwórz'}
           </Button>
         </CreateRoomForm>
       </CreateRoomCard>
@@ -257,13 +246,12 @@ const RoomList = ({ user, onJoinRoom }) => {
           <RoomCard key={room.id} onClick={() => handleJoinRoom(room)}>
             <RoomName>#{room.name}</RoomName>
             <RoomStats>
-              {/* Usunięto licznik użytkowników */}
-              <span>💬 {room.messageCount || 0} messages</span>
+              <span>💬 {room.messageCount || 0} wiadomości</span>
             </RoomStats>
             <RoomDescription>
-              {room.id === 'general' && 'xx'}
-              {room.id === 'random' && 'xx'}
-              {!['general', 'random'].includes(room.id) && 'xx'}
+              {room.id === 'general' && 'Główny pokój dla wszystkich'}
+              {room.id === 'random' && 'Pokój dla losowych rozmów'}
+              {!['general', 'random'].includes(room.id) && 'Pokój stworzony przez użytkownika'}
             </RoomDescription>
             <JoinButton>
               Dołącz

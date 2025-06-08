@@ -185,21 +185,19 @@ const CacheDemo = () => {
           throw new Error('Unknown strategy');
       }
       
-      setResults(prev => ({ ...prev, [strategy]: response.data }));
-      toast.success(`${strategy} test completed`);
+      setResults(prev => ({ ...prev, [strategy]: response.data }));      toast.success(`Test ${strategy} zakończony`);
       
     } catch (error) {
-      // Fallback with mock data if API is not available
       const mockResult = {
         success: true,
         strategy: strategy,
         responseTime: `${Math.floor(Math.random() * 100) + 10}ms`,
-        data: { test: 'mock data' },
-        explanation: `Mock result for ${strategy} strategy`
+        data: { test: 'przykładowe dane' },
+        explanation: `Przykładowy wynik dla strategii ${strategy}`
       };
       
       setResults(prev => ({ ...prev, [strategy]: mockResult }));
-      toast.success(`${strategy} test completed (mock data)`);
+      toast.success(`Test ${strategy} zakończony (przykładowe dane)`);
     } finally {
       setLoading(prev => ({ ...prev, [strategy]: false }));
     }
@@ -215,9 +213,7 @@ const CacheDemo = () => {
       for (const strategy of strategies) {
         try {
           const response = await axios.get(`/api/cache/benchmark/${strategy}?iterations=100`);
-          benchmarkResults[strategy] = response.data.benchmark;
-        } catch (error) {
-          // Mock benchmark data
+          benchmarkResults[strategy] = response.data.benchmark;        } catch (error) {
           benchmarkResults[strategy] = {
             operation: strategy,
             iterations: 100,
@@ -227,12 +223,11 @@ const CacheDemo = () => {
           };
         }
       }
-      
-      setResults(prev => ({ ...prev, benchmark: benchmarkResults }));
-      toast.success('Benchmark completed');
+        setResults(prev => ({ ...prev, benchmark: benchmarkResults }));
+      toast.success('Test wydajności zakończony');
       
     } catch (error) {
-      toast.error('Benchmark failed');
+      toast.error('Test wydajności nie powiódł się');
     } finally {
       setLoading(prev => ({ ...prev, benchmark: false }));
     }
@@ -240,11 +235,11 @@ const CacheDemo = () => {
 
   return (
     <CacheDemoContainer>
-      <CacheTitle>⚡ Cache Strategies Demo</CacheTitle>
+      <CacheTitle>Cache</CacheTitle>
       
-      {/* Cache Patterns */}
+
       <StrategySection>
-        <StrategyTitle>📋 Cache Patterns</StrategyTitle>
+        <StrategyTitle>Wzorce</StrategyTitle>
         
         <StrategyGrid>
           <StrategyCard>
@@ -252,15 +247,14 @@ const CacheDemo = () => {
             <p>Aplikacja zarządza cache ręcznie. Sprawdza cache, przy miss pobiera z bazy i zapisuje w cache.</p>
             <TestButton 
               onClick={() => testStrategy('cache-aside')}
-              disabled={loading['cache-aside']}
-            >
-              {loading['cache-aside'] ? 'Testing...' : 'Test Cache-Aside'}
+              disabled={loading['cache-aside']}            >
+              {loading['cache-aside'] ? 'Testowanie...' : 'Testuj Cache-Aside'}
             </TestButton>
             
             {results['cache-aside'] && (
               <ResultsContainer>
-                <p><strong>Strategy:</strong> {results['cache-aside'].strategy}</p>
-                <p><strong>Response Time:</strong> {results['cache-aside'].responseTime}</p>
+                <p><strong>Strategia:</strong> {results['cache-aside'].strategy}</p>
+                <p><strong>Czas:</strong> {results['cache-aside'].responseTime}</p>
                 <p><strong>Data:</strong> {JSON.stringify(results['cache-aside'].data)}</p>
               </ResultsContainer>
             )}
@@ -271,15 +265,13 @@ const CacheDemo = () => {
             <p>Cache automatycznie ładuje dane z bazy przy cache miss. Transparentne dla aplikacji.</p>
             <TestButton 
               onClick={() => testStrategy('read-through')}
-              disabled={loading['read-through']}
-            >
-              {loading['read-through'] ? 'Testing...' : 'Test Read-Through'}
+              disabled={loading['read-through']}            >
+              {loading['read-through'] ? 'Testowanie...' : 'Testuj Read-Through'}
             </TestButton>
-            
-            {results['read-through'] && (
+              {results['read-through'] && (
               <ResultsContainer>
-                <p><strong>Strategy:</strong> {results['read-through'].strategy}</p>
-                <p><strong>Response Time:</strong> {results['read-through'].responseTime}</p>
+                <p><strong>Strategia:</strong> {results['read-through'].strategy}</p>
+                <p><strong>Czas odpowiedzi:</strong> {results['read-through'].responseTime}</p>
               </ResultsContainer>
             )}
           </StrategyCard>
@@ -289,15 +281,14 @@ const CacheDemo = () => {
             <p>Zapis jednocześnie do cache i bazy danych. Gwarantuje spójność ale zwiększa latencję.</p>
             <TestButton 
               onClick={() => testStrategy('write-through')}
-              disabled={loading['write-through']}
-            >
-              {loading['write-through'] ? 'Testing...' : 'Test Write-Through'}
+              disabled={loading['write-through']}            >
+              {loading['write-through'] ? 'Testowanie...' : 'Testuj Write-Through'}
             </TestButton>
             
             {results['write-through'] && (
               <ResultsContainer>
-                <p><strong>Strategy:</strong> {results['write-through'].strategy}</p>
-                <p><strong>Response Time:</strong> {results['write-through'].responseTime}</p>
+                <p><strong>Strategia:</strong> {results['write-through'].strategy}</p>
+                <p><strong>Czas odpowiedzi:</strong> {results['write-through'].responseTime}</p>
               </ResultsContainer>
             )}
           </StrategyCard>
@@ -307,24 +298,23 @@ const CacheDemo = () => {
             <p>Zapis omija cache, idzie bezpośrednio do bazy. Unika cache pollution ale powoduje cache miss.</p>
             <TestButton 
               onClick={() => testStrategy('write-around')}
-              disabled={loading['write-around']}
-            >
-              {loading['write-around'] ? 'Testing...' : 'Test Write-Around'}
+              disabled={loading['write-around']}            >
+              {loading['write-around'] ? 'Testowanie...' : 'Testuj Write-Around'}
             </TestButton>
             
             {results['write-around'] && (
               <ResultsContainer>
-                <p><strong>Strategy:</strong> {results['write-around'].strategy}</p>
-                <p><strong>Response Time:</strong> {results['write-around'].responseTime}</p>
+                <p><strong>Strategia:</strong> {results['write-around'].strategy}</p>
+                <p><strong>Czas odpowiedzi:</strong> {results['write-around'].responseTime}</p>
               </ResultsContainer>
             )}
           </StrategyCard>
         </StrategyGrid>
       </StrategySection>
 
-      {/* Eviction Policies */}
+
       <StrategySection>
-        <StrategyTitle>🔄 Eviction Policies</StrategyTitle>
+        <StrategyTitle>🔄 Polityki eksmisji</StrategyTitle>
         
         <StrategyGrid>
           <StrategyCard>
@@ -332,15 +322,14 @@ const CacheDemo = () => {
             <p>Usuwa najmniej ostatnio używane elementy. Dobra lokalność czasowa.</p>
             <TestButton 
               onClick={() => testStrategy('lru')}
-              disabled={loading.lru}
-            >
-              {loading.lru ? 'Testing...' : 'Test LRU'}
+              disabled={loading.lru}            >
+              {loading.lru ? 'Testowanie...' : 'Testuj LRU'}
             </TestButton>
             
             {results.lru && (
               <ResultsContainer>
-                <p><strong>Strategy:</strong> {results.lru.strategy}</p>
-                <p><strong>Cached:</strong> {JSON.stringify(results.lru.data)}</p>
+                <p><strong>Strategia:</strong> {results.lru.strategy}</p>
+                <p><strong>Cachowane:</strong> {JSON.stringify(results.lru.data)}</p>
               </ResultsContainer>
             )}
           </StrategyCard>
@@ -350,26 +339,24 @@ const CacheDemo = () => {
             <p>Usuwa najmniej często używane elementy. Zachowuje popularne dane.</p>
             <TestButton 
               onClick={() => testStrategy('lfu')}
-              disabled={loading.lfu}
-            >
-              {loading.lfu ? 'Testing...' : 'Test LFU'}
+              disabled={loading.lfu}            >
+              {loading.lfu ? 'Testowanie...' : 'Testuj LFU'}
             </TestButton>
             
             {results.lfu && (
               <ResultsContainer>
-                <p><strong>Strategy:</strong> {results.lfu.strategy}</p>
-                <p><strong>Cached:</strong> {JSON.stringify(results.lfu.data)}</p>
+                <p><strong>Strategia:</strong> {results.lfu.strategy}</p>
+                <p><strong>Cachowane:</strong> {JSON.stringify(results.lfu.data)}</p>
               </ResultsContainer>
             )}
           </StrategyCard>
         </StrategyGrid>
       </StrategySection>
 
-      {/* Benchmark */}
-      <StrategySection>
-        <StrategyTitle>📊 Performance Benchmark</StrategyTitle>
+
+      <StrategySection>        <StrategyTitle>📊 Test wydajności</StrategyTitle>
         <ExplanationBox>
-          <h4>Performance Testing</h4>
+          <h4>Testowanie wydajności</h4>
           <p>Porównanie wydajności różnych strategii cache (100 operacji każda):</p>
         </ExplanationBox>
         
@@ -378,18 +365,17 @@ const CacheDemo = () => {
           disabled={loading.benchmark}
           style={{ maxWidth: '300px' }}
         >
-          {loading.benchmark ? 'Running Benchmark...' : 'Run Performance Test'}
+          {loading.benchmark ? 'Uruchamianie testu...' : 'Uruchom test wydajności'}
         </TestButton>
         
         {results.benchmark && (
           <div>
-            <ComparisonTable>
-              <thead>
+            <ComparisonTable>              <thead>
                 <tr>
-                  <th>Strategy</th>
-                  <th>Total Time (ms)</th>
-                  <th>Avg Time (ms)</th>
-                  <th>Throughput (ops/sec)</th>
+                  <th>Strategia</th>
+                  <th>Całkowity czas (ms)</th>
+                  <th>Średni czas (ms)</th>
+                  <th>Przepustowość (ops/sek)</th>
                 </tr>
               </thead>
               <tbody>
@@ -403,45 +389,9 @@ const CacheDemo = () => {
                 ))}
               </tbody>
             </ComparisonTable>
-          </div>
-        )}
+          </div>        )}
       </StrategySection>
 
-      {/* Theory Section */}
-      <StrategySection>
-        <StrategyTitle>📚 Cache Theory</StrategyTitle>
-        
-        <ExplanationBox>
-          <h4>Czym jest cachowanie?</h4>
-          <p>
-            Cachowanie to technika przechowywania kopii często używanych danych w szybko dostępnej 
-            lokalizacji aby zmniejszyć czas dostępu i obciążenie głównego źródła danych.
-          </p>
-        </ExplanationBox>
-
-        <StrategyGrid>
-          <div>
-            <h4>✅ Zalety cachowania:</h4>
-            <ul>
-              <li>Dramatyczne przyspieszenie aplikacji</li>
-              <li>Redukcja obciążenia bazy danych</li>
-              <li>Oszczędność przepustowości sieci</li>
-              <li>Lepsza skalowalność</li>
-              <li>Redukcja kosztów infrastruktury</li>
-            </ul>
-          </div>
-          <div>
-            <h4>❌ Wady cachowania:</h4>
-            <ul>
-              <li>Złożoność implementacji</li>
-              <li>Problemy z konsystencją danych</li>
-              <li>Dodatkowa infrastruktura</li>
-              <li>Cache invalidation challenges</li>
-              <li>Możliwość cache stampede</li>
-            </ul>
-          </div>
-        </StrategyGrid>
-      </StrategySection>
     </CacheDemoContainer>
   );
 };
